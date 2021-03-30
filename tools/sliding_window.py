@@ -35,8 +35,11 @@ def sliding_window(data, size_window=20, demean=True):
         100, 300, 240 = data_out.shape
 
     """
-
-    n_obs, n_features, n_time = data.shape
+    
+    try:
+        n_obs, n_features, n_time = data.shape
+    except ValueError:
+        raise ValueError("Data has the wrong shape")
     
     if size_window <= 1 or len(data.shape) < 3 or n_time <= size_window:
         print('not suitable')
