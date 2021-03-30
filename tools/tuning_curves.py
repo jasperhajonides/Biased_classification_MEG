@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+X#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Sat Mar 27 12:09:38 2021
@@ -8,8 +8,9 @@ Created on Sat Mar 27 12:09:38 2021
 
 # cos convolve
 
+import pycircstat
 
-def compute_asymmetry(data, angular_difference, min_deg = 30, max_deg = 60):
+def compute_asymmetry(data, y = None, reference = None, min_deg = 30, max_deg = 60):
     """Compute distribution of x by phase-bins in the Instantaneous Frequency.
 
     Parameters
@@ -17,8 +18,15 @@ def compute_asymmetry(data, angular_difference, min_deg = 30, max_deg = 60):
     data : ndarray
         three-dimensional array of [trial repeats by classes by time points]. 
         Correct class is in position n_classes/2 
-    angular_difference : ndarray
-        Input vector in radians [-pi to pi] with the same length as trials 
+        
+        *alternatively 'data', 'y', and 'reference' can be specified
+         as a dictionary
+    y : ndarray
+        Input vector for presented stimulus in radians  with the same 
+        length as trials 
+    reference : ndarray
+        Input vector for reference stimulus in radians  with the same 
+        length as trials 
     min_deg : float
          min angular distance cut-off point for trials to include
     max_deg : float
@@ -35,7 +43,25 @@ def compute_asymmetry(data, angular_difference, min_deg = 30, max_deg = 60):
 
     """
     
+    # check input
+    if type(data) is dict:
+        reference = data['reference']
+        y = data['y']
+        data = data['single_trial_ev_centered']
+        
+    if type(data) is np.ndarray:
+        if y is None or reference is None:
+            raise Exception("Specifiy both y and reference variable") # check  
+            
+        if y.max() > (2*np.pi) or reference.max() > (2*np.pi):
+            # if variables are out of range 
+            raise Exception("Define y and reference in radians") 
+
+    # main body
+        
     n_trials, n_classes, n_tps = data.shape
+    
+    angular_difference = pycircstat.cdiff(reference,y)
     
     # compute evidence for all classes for trials CW from current angle
     CW = data[(angular_difference <= -min_deg/90*np.pi) & 
